@@ -79,7 +79,7 @@ function! FoldText()
       echo remainder extensionCenterWidth expansionWidth
       let expansionStr = g:FoldText_expansion[0] . repeat(g:FoldText_expansion[1:-2], (expansionWidth - 2)/extensionCenterWidth) . repeat(g:FoldText_expansion[-2:-2], remainder) . g:FoldText_expansion[-1:]
     endif
-    return line . foldEnding . expansionStr . ending
+    return line . foldEnding . ending . expansionStr
 endfunction
 
 set foldtext=FoldText()

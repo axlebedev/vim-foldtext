@@ -1,3 +1,5 @@
+Diff from base repo: show lines number next to main text, not on the right
+
 # vim-foldtext
 
 Credit
