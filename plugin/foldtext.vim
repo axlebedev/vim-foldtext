@@ -55,23 +55,18 @@ function! FoldText()
     let signColumnWidth = len(signlist) >= 2 ? 2 : 0
     let width = winwidth(0) - foldColumnWidth - numberColumnWidth - signColumnWidth
 
-    let ending = ""
+    let beginning = ""
     if g:FoldText_info
-        if g:FoldText_width > 0 && g:FoldText_width < (width-6)
-            let endsize = "%-" . string(width - g:FoldText_width + 4) . "s"
-        else
-            let endsize = "%-11s"
-        end
         let foldSize = 1 + v:foldend - v:foldstart
-        let ending = printf("%s%s%s", g:FoldText_line, g:FoldText_multiplication, foldSize)
-        let ending = printf(endsize, ending)
+        let beginning = printf("%s", foldSize)
+        " let beginning = printf("%s%s%s", g:FoldText_line, g:FoldText_multiplication, foldSize)
 
-        if strwidth(line . foldEnding . ending) >= width
-            let line = strpart(line, 0, width - strwidth(foldEnding . ending) - 2)
-        endif
+        " if strwidth(line . foldEnding . beginning) >= width
+        "     let line = strpart(line, 0, width - strwidth(foldEnding . beginning) - 2)
+        " endif
     endif
 
-    let expansionWidth = width - strwidth(line . foldEnding . ending)
+    let expansionWidth = width - strwidth(line . foldEnding . beginning)
     let expansionStr = repeat(" ", expansionWidth)
     if expansionWidth > 2
       let extensionCenterWidth = strwidth(g:FoldText_expansion[1:-2])
@@ -79,7 +74,7 @@ function! FoldText()
       echo remainder extensionCenterWidth expansionWidth
       let expansionStr = g:FoldText_expansion[0] . repeat(g:FoldText_expansion[1:-2], (expansionWidth - 2)/extensionCenterWidth) . repeat(g:FoldText_expansion[-2:-2], remainder) . g:FoldText_expansion[-1:]
     endif
-    return line . foldEnding . ending . expansionStr
+    return beginning . line[beginning->strcharlen() : ] . foldEnding . expansionStr
 endfunction
 
 set foldtext=FoldText()
