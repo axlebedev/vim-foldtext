@@ -1,80 +1,78 @@
-if has('multi_byte')
-    let defaults = {'placeholder': '⋯',   'line': '▤', 'multiplication': '×' }
-else
-    let defaults = {'placeholder': '...', 'line': 'L', 'multiplication': '*' }
-endif
+vim9script 
 
-let g:FoldText_placeholder    = get(g:, 'FoldText_placeholder',    defaults['placeholder'])
-let g:FoldText_line           = get(g:, 'FoldText_line',           defaults['line'])
-let g:FoldText_multiplication = get(g:, 'FoldText_multiplication', defaults['multiplication'])
-let g:FoldText_info           = get(g:, 'FoldText_info',           1)
-let g:FoldText_width          = get(g:, 'FoldText_width',          0)
-let g:FoldText_expansion      = get(g:, 'FoldText_expansion',      "<=>")
+var defaults = has('multi_byte')
+    ? { placeholder: '⋯', line: '▤', multiplication: '×' }
+    : { placeholder: '...', line: 'L', multiplication: '*' }
 
-unlet defaults
+g:FoldText_placeholder    = get(g:, 'FoldText_placeholder',    defaults['placeholder'])
+g:FoldText_line           = get(g:, 'FoldText_line',           defaults['line'])
+g:FoldText_multiplication = get(g:, 'FoldText_multiplication', defaults['multiplication'])
+g:FoldText_info           = get(g:, 'FoldText_info',           1)
+g:FoldText_width          = get(g:, 'FoldText_width',          0)
+g:FoldText_expansion      = get(g:, 'FoldText_expansion',      "<=>")
 
-function! FoldText()
-    let fs = v:foldstart
-    while getline(fs) =~ '^\s*$'
-        let fs = nextnonblank(fs + 1)
+var endBlockChars   = ['end', '}', ']', ')', '})', '},', '}}}']
+var endBlockRegex = printf('^\(\s*\|\s*\"\s*\)\(%s\);\?$', join(endBlockChars, '\|'))
+var endCommentRegex = '\s*\*/\s*$'
+var startCommentBlankRegex = '\v^\s*/\*!?\s*$'
+
+def FoldText(): string
+    if (v:foldend == 0)
+        return ''
+    endif
+
+    var foldStartLine = v:foldstart
+    while getline(foldStartLine) =~ '^\s*$'
+        foldStartLine = nextnonblank(foldStartLine + 1)
     endwhile
-    if fs > v:foldend
-        let line = getline(v:foldstart)
-    else
-        let spaces = repeat(' ', &tabstop)
-        let line = substitute(getline(fs), '\t', spaces, 'g')
+
+    var line = getline(v:foldstart)
+    if (foldStartLine <= v:foldend)
+        var spaces = repeat(' ', &tabstop)
+        line = substitute(getline(foldStartLine), '\t', spaces, 'g')
     endif
 
-    let endBlockChars   = ['end', '}', ']', ')', '})', '},', '}}}']
-    let endBlockRegex = printf('^\(\s*\|\s*\"\s*\)\(%s\);\?$', join(endBlockChars, '\|'))
-    let endCommentRegex = '\s*\*/\s*$'
-    let startCommentBlankRegex = '\v^\s*/\*!?\s*$'
+    var foldEnding = strpart(getline(v:foldend), indent(v:foldend), 3)
 
-    let foldEnding = strpart(getline(v:foldend), indent(v:foldend), 3)
-
-    if foldEnding =~ endBlockRegex
-        if foldEnding =~ '^\s*\"'
-            let foldEnding = strpart(getline(v:foldend), indent(v:foldend)+2, 3)
-        end
-        let foldEnding = " " . g:FoldText_placeholder . " " . foldEnding
-    elseif foldEnding =~ endCommentRegex
-        if getline(v:foldstart) =~ startCommentBlankRegex
-            let nextLine = substitute(getline(v:foldstart + 1), '\v\s*\*', '', '')
-            let line = line . nextLine
+    if (foldEnding =~ endBlockRegex)
+        if (foldEnding =~ '^\s*\"')
+            foldEnding = strpart(getline(v:foldend), indent(v:foldend) + 2, 3)
         endif
-        let foldEnding = " " . g:FoldText_placeholder . " " . foldEnding
+        foldEnding = ' ' .. g:FoldText_placeholder .. ' ' .. foldEnding
+    elseif (foldEnding =~ endCommentRegex)
+        if (getline(v:foldstart) =~ startCommentBlankRegex)
+            var nextLine = substitute(getline(v:foldstart + 1), '\v\s*\*', '', '')
+            line = line .. nextLine
+        endif
+        foldEnding = ' ' .. g:FoldText_placeholder .. ' ' .. foldEnding
     else
-        let foldEnding = " " . g:FoldText_placeholder
+        foldEnding = ' ' .. g:FoldText_placeholder
     endif
-    let foldEnding = substitute(foldEnding, '\s\+$', '', '')
+    foldEnding = substitute(foldEnding, '\s\+$', '', '')
 
-    redir =>signs | exe "silent sign place buffer=".bufnr('') | redir end
-    let signlist = split(signs, '\n')
-    let foldColumnWidth = (&foldcolumn ? &foldcolumn : 0)
-    let numberColumnWidth = &number ? strwidth(line('$')) : 0
-    let signColumnWidth = len(signlist) >= 2 ? 2 : 0
-    let width = winwidth(0) - foldColumnWidth - numberColumnWidth - signColumnWidth
+    var signs = ''
+    redir > signs | exe "silent sign place buffer=" .. bufnr('') | redir end
 
-    let beginning = ""
-    if g:FoldText_info
-        let foldSize = 1 + v:foldend - v:foldstart
-        let beginning = printf("%s", foldSize)
-        " let beginning = printf("%s%s%s", g:FoldText_line, g:FoldText_multiplication, foldSize)
+    var signlist = split(signs, '\n')
+    var foldColumnWidth = (&foldcolumn ? &foldcolumn : 0)
+    var numberColumnWidth = &number ? strwidth(string(line('$'))) : 0
+    var signColumnWidth = len(signlist) >= 2 ? 2 : 0
+    var width = winwidth(0) - foldColumnWidth - numberColumnWidth - signColumnWidth
 
-        " if strwidth(line . foldEnding . beginning) >= width
-        "     let line = strpart(line, 0, width - strwidth(foldEnding . beginning) - 2)
-        " endif
+    var beginning = ''
+    if (g:FoldText_info)
+        var foldSize = 1 + v:foldend - v:foldstart
+        beginning = printf("%s", foldSize)
     endif
 
-    let expansionWidth = width - strwidth(line . foldEnding . beginning)
-    let expansionStr = repeat(" ", expansionWidth)
-    if expansionWidth > 2
-      let extensionCenterWidth = strwidth(g:FoldText_expansion[1:-2])
-      let remainder = (expansionWidth - 2) % extensionCenterWidth
-      echo remainder extensionCenterWidth expansionWidth
-      let expansionStr = g:FoldText_expansion[0] . repeat(g:FoldText_expansion[1:-2], (expansionWidth - 2)/extensionCenterWidth) . repeat(g:FoldText_expansion[-2:-2], remainder) . g:FoldText_expansion[-1:]
+    var expansionWidth = width - strwidth(beginning .. line .. foldEnding)
+    var expansionStr = repeat(' ', expansionWidth)
+    if (expansionWidth > 2)
+        var extensionCenterWidth = strwidth(g:FoldText_expansion[1 : -2])
+        var remainder = (expansionWidth - 2) % extensionCenterWidth
+        expansionStr = g:FoldText_expansion[0] .. repeat(g:FoldText_expansion[1 : -2], (expansionWidth - 2) / extensionCenterWidth) .. repeat(g:FoldText_expansion[-2 : -2], remainder) .. g:FoldText_expansion[-1 :]
     endif
-    return beginning . line[beginning->strcharlen() : ] . foldEnding . expansionStr
-endfunction
+    return beginning .. line[beginning->strcharlen() : ] .. foldEnding .. expansionStr
+enddef
 
-set foldtext=FoldText()
+set foldtext=s:FoldText()
