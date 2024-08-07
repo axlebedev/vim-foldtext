@@ -24,6 +24,18 @@ def GetFoldStartLineNr(): number
     return foldStartLine
 enddef
 
+def GetWidth(): number
+    var signs = ''
+    redir > signs | exe "silent sign place buffer=" .. bufnr('') | redir end
+    var signlist = split(signs, '\n')
+
+    var foldColumnWidth = (&foldcolumn ? &foldcolumn : 0)
+    var numberColumnWidth = &number ? strwidth(string(line('$'))) : 0
+    var signColumnWidth = len(signlist) >= 2 ? 2 : 0
+    var width = winwidth(0) - foldColumnWidth - numberColumnWidth - signColumnWidth
+    return width
+enddef
+
 def FoldText(): string
     if (v:foldend == 0)
         return ''
@@ -54,14 +66,7 @@ def FoldText(): string
     endif
     foldEnding = substitute(foldEnding, '\s\+$', '', '')
 
-    var signs = ''
-    redir > signs | exe "silent sign place buffer=" .. bufnr('') | redir end
-
-    var signlist = split(signs, '\n')
-    var foldColumnWidth = (&foldcolumn ? &foldcolumn : 0)
-    var numberColumnWidth = &number ? strwidth(string(line('$'))) : 0
-    var signColumnWidth = len(signlist) >= 2 ? 2 : 0
-    var width = winwidth(0) - foldColumnWidth - numberColumnWidth - signColumnWidth
+    var width = GetWidth()
 
     var beginning = ''
     if (g:FoldText_info)
