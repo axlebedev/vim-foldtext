@@ -16,16 +16,20 @@ var endBlockRegex = printf('^\(\s*\|\s*\"\s*\)\(%s\);\?$', join(endBlockChars, '
 var endCommentRegex = '\s*\*/\s*$'
 var startCommentBlankRegex = '\v^\s*/\*!?\s*$'
 
+def GetFoldStartLineNr(): number
+    var foldStartLine = v:foldstart
+    while getline(foldStartLine) =~ '^\s*$'
+        foldStartLine = nextnonblank(foldStartLine + 1)
+    endwhile
+    return foldStartLine
+enddef
+
 def FoldText(): string
     if (v:foldend == 0)
         return ''
     endif
 
-    var foldStartLine = v:foldstart
-    while getline(foldStartLine) =~ '^\s*$'
-        foldStartLine = nextnonblank(foldStartLine + 1)
-    endwhile
-
+    var foldStartLine = GetFoldStartLineNr()
     var line = getline(v:foldstart)
     if (foldStartLine <= v:foldend)
         var spaces = repeat(' ', &tabstop)
