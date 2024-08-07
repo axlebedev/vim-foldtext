@@ -6,7 +6,6 @@ var defaults = has('multi_byte')
 
 g:FoldText_placeholder    = get(g:, 'FoldText_placeholder', defaults['placeholder'])
 g:FoldText_showCount      = get(g:, 'FoldText_showCount',   true)
-g:FoldText_expansion      = get(g:, 'FoldText_expansion',   '<=>')
 
 var END_BLOCK_CHARS   = ['end', '}', ']', ')', '})', '},', '}}}']
 var END_BLOCK_REGEX = printf('^\(\s*\|\s*\"\s*\)\(%s\);\?$', join(END_BLOCK_CHARS, '\|'))
@@ -37,15 +36,8 @@ enddef
 
 # Return string of spaces to the end of window
 # (override default '---' string)
-def GetExpansionStr(contentLineWidth: number): string
-    var expansionWidth = GetWidth() - contentLineWidth
-    var expansionStr = repeat(' ', expansionWidth)
-    if (expansionWidth > 2)
-        var extensionCenterWidth = strwidth(g:FoldText_expansion[1 : -2])
-        var remainder = (expansionWidth - 2) % extensionCenterWidth
-        expansionStr = g:FoldText_expansion[0] .. repeat(g:FoldText_expansion[1 : -2], (expansionWidth - 2) / extensionCenterWidth) .. repeat(g:FoldText_expansion[-2 : -2], remainder) .. g:FoldText_expansion[-1 :]
-    endif
-    return expansionStr
+def GetExpansionStr(): string
+    return repeat(' ', GetWidth())
 enddef
 
 # If enabled 'g:FoldText_showCount' - return count of folded lines
@@ -101,9 +93,8 @@ def FoldText(): string
     var count = GetLinesCount()
     var contentLine = count .. strcharpart(foldLine, count->strwidth())
 
-    var expansionStr = GetExpansionStr(contentLine->strwidth())
-
-    return contentLine .. expansionStr
+    var expansionStr = GetExpansionStr()
+    return contentLine .. strcharpart(expansionStr, contentLine->strwidth()) 
 enddef
 
 set foldtext=s:FoldText()
