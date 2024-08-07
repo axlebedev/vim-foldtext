@@ -4,12 +4,9 @@ var defaults = has('multi_byte')
     ? { placeholder: '⋯', line: '▤', multiplication: '×' }
     : { placeholder: '...', line: 'L', multiplication: '*' }
 
-g:FoldText_placeholder    = get(g:, 'FoldText_placeholder',    defaults['placeholder'])
-g:FoldText_line           = get(g:, 'FoldText_line',           defaults['line'])
-g:FoldText_multiplication = get(g:, 'FoldText_multiplication', defaults['multiplication'])
-g:FoldText_info           = get(g:, 'FoldText_info',           1)
-g:FoldText_width          = get(g:, 'FoldText_width',          0)
-g:FoldText_expansion      = get(g:, 'FoldText_expansion',      "<=>")
+g:FoldText_placeholder    = get(g:, 'FoldText_placeholder', defaults['placeholder'])
+g:FoldText_showCount      = get(g:, 'FoldText_showCount',   true)
+g:FoldText_expansion      = get(g:, 'FoldText_expansion',   '<=>')
 
 var END_BLOCK_CHARS   = ['end', '}', ']', ')', '})', '},', '}}}']
 var END_BLOCK_REGEX = printf('^\(\s*\|\s*\"\s*\)\(%s\);\?$', join(END_BLOCK_CHARS, '\|'))
@@ -51,10 +48,10 @@ def GetExpansionStr(contentLineWidth: number): string
     return expansionStr
 enddef
 
-# If enabled 'g:FoldText_info' - return count of folded lines
+# If enabled 'g:FoldText_showCount' - return count of folded lines
 def GetLinesCount(): string
     var count = ''
-    if (g:FoldText_info)
+    if (g:FoldText_showCount)
         var foldSize = 1 + v:foldend - v:foldstart
         count = printf("%s", foldSize)
     endif
@@ -102,9 +99,9 @@ def FoldText(): string
     var foldLine = GetBeginning() .. GetMiddle() .. GetEnding()
 
     var count = GetLinesCount()
-    var contentLine = count .. strcharpart(foldLine, count->strcharlen())
+    var contentLine = count .. strcharpart(foldLine, count->strwidth())
 
-    var expansionStr = GetExpansionStr(strwidth(contentLine))
+    var expansionStr = GetExpansionStr(contentLine->strwidth())
 
     return contentLine .. expansionStr
 enddef
