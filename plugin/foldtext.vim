@@ -24,9 +24,9 @@ enddef
 
 # Return inner width of current window, without numberColumn, sign, etc.
 def GetWidth(): number
-    var signs1 = ''
-    redir =>> signs1 | exe "silent sign place buffer=" .. bufnr('') | redir END
-    var signlist = split(signs1, '\n')
+    var signs = ''
+    redir =>> signs | exe "silent sign place buffer=" .. bufnr('') | redir END
+    var signlist = split(signs, '\n')
 
     var foldColumnWidth = (&foldcolumn ? &foldcolumn : 0)
     var numberColumnWidth = &number ? strwidth(string(line('$'))) : 0
