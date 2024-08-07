@@ -51,14 +51,14 @@ def GetExpansionStr(contentLineWidth: number): string
     return expansionStr
 enddef
 
-# If enabled 'g:FoldText_info' - return number of folded lines
-def GetBeginning(): string
-    var beginning = ''
+# If enabled 'g:FoldText_info' - return count of folded lines
+def GetLinesCount(): string
+    var count = ''
     if (g:FoldText_info)
         var foldSize = 1 + v:foldend - v:foldstart
-        beginning = printf("%s", foldSize)
+        count = printf("%s", foldSize)
     endif
-    return beginning
+    return count
 enddef
 
 # MAIN
@@ -92,9 +92,9 @@ def FoldText(): string
     endif
     foldEnding = substitute(foldEnding, '\s\+$', '', '')
 
-    var beginning = GetBeginning()
+    var count = GetLinesCount()
 
-    var contentLine = beginning .. line[beginning->strcharlen() : ] .. foldEnding
+    var contentLine = count .. line[count->strcharlen() : ] .. foldEnding
     var expansionStr = GetExpansionStr(strwidth(contentLine))
 
     return contentLine .. expansionStr
