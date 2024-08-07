@@ -80,16 +80,14 @@ def FoldText(): string
         if (foldEnding =~ '^\s*\"')
             foldEnding = strpart(getline(v:foldend), indent(v:foldend) + 2, 3)
         endif
-        foldEnding = ' ' .. g:FoldText_placeholder .. ' ' .. foldEnding
     elseif (foldEnding =~ END_COMMENT_REGEX)
         if (getline(v:foldstart) =~ START_COMMENT_BLANK_REGEX)
             var nextLine = substitute(getline(v:foldstart + 1), '\v\s*\*', '', '')
             line = line .. nextLine
         endif
-        foldEnding = ' ' .. g:FoldText_placeholder .. ' ' .. foldEnding
-    else
-        foldEnding = ' ' .. g:FoldText_placeholder
     endif
+
+    foldEnding = ' ' .. g:FoldText_placeholder .. ' ' .. foldEnding
     foldEnding = substitute(foldEnding, '\s\+$', '', '')
 
     var count = GetLinesCount()
