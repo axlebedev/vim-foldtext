@@ -11,10 +11,10 @@ g:FoldText_info           = get(g:, 'FoldText_info',           1)
 g:FoldText_width          = get(g:, 'FoldText_width',          0)
 g:FoldText_expansion      = get(g:, 'FoldText_expansion',      "<=>")
 
-var endBlockChars   = ['end', '}', ']', ')', '})', '},', '}}}']
-var endBlockRegex = printf('^\(\s*\|\s*\"\s*\)\(%s\);\?$', join(endBlockChars, '\|'))
-var endCommentRegex = '\s*\*/\s*$'
-var startCommentBlankRegex = '\v^\s*/\*!?\s*$'
+var END_BLOCK_CHARS   = ['end', '}', ']', ')', '})', '},', '}}}']
+var END_BLOCK_REGEX = printf('^\(\s*\|\s*\"\s*\)\(%s\);\?$', join(END_BLOCK_CHARS, '\|'))
+var END_COMMENT_REGEX = '\s*\*/\s*$'
+var START_COMMENT_BLANK_REGEX = '\v^\s*/\*!?\s*$'
 
 def GetFoldStartLineNr(): number
     var foldStartLine = v:foldstart
@@ -61,13 +61,13 @@ def FoldText(): string
 
     var foldEnding = strpart(getline(v:foldend), indent(v:foldend), 3)
 
-    if (foldEnding =~ endBlockRegex)
+    if (foldEnding =~ END_BLOCK_REGEX)
         if (foldEnding =~ '^\s*\"')
             foldEnding = strpart(getline(v:foldend), indent(v:foldend) + 2, 3)
         endif
         foldEnding = ' ' .. g:FoldText_placeholder .. ' ' .. foldEnding
-    elseif (foldEnding =~ endCommentRegex)
-        if (getline(v:foldstart) =~ startCommentBlankRegex)
+    elseif (foldEnding =~ END_COMMENT_REGEX)
+        if (getline(v:foldstart) =~ START_COMMENT_BLANK_REGEX)
             var nextLine = substitute(getline(v:foldstart + 1), '\v\s*\*', '', '')
             line = line .. nextLine
         endif
