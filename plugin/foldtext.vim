@@ -66,10 +66,10 @@ def GetMiddle(): string
 enddef
 
 def GetEnding(): string
-    var foldEnding = strpart(getline(v:foldend), indent(v:foldend), 3)
+    var foldEnding = strpart(getline(v:foldend), indent(v:foldend))
 
     if (foldEnding =~ END_BLOCK_REGEX && foldEnding =~ '^\s*\"')
-        foldEnding = strpart(getline(v:foldend), indent(v:foldend) + 2, 3)
+        foldEnding = strpart(getline(v:foldend), indent(v:foldend) + 2)
     endif
 
     foldEnding = substitute(foldEnding, '\s\+$', '', '')
