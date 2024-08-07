@@ -36,6 +36,17 @@ def GetWidth(): number
     return width
 enddef
 
+def GetExpansionStr(contentLineWidth: number): string
+    var expansionWidth = GetWidth() - contentLineWidth
+    var expansionStr = repeat(' ', expansionWidth)
+    if (expansionWidth > 2)
+        var extensionCenterWidth = strwidth(g:FoldText_expansion[1 : -2])
+        var remainder = (expansionWidth - 2) % extensionCenterWidth
+        expansionStr = g:FoldText_expansion[0] .. repeat(g:FoldText_expansion[1 : -2], (expansionWidth - 2) / extensionCenterWidth) .. repeat(g:FoldText_expansion[-2 : -2], remainder) .. g:FoldText_expansion[-1 :]
+    endif
+    return expansionStr
+enddef
+
 def FoldText(): string
     if (v:foldend == 0)
         return ''
@@ -74,14 +85,10 @@ def FoldText(): string
         beginning = printf("%s", foldSize)
     endif
 
-    var expansionWidth = width - strwidth(beginning .. line .. foldEnding)
-    var expansionStr = repeat(' ', expansionWidth)
-    if (expansionWidth > 2)
-        var extensionCenterWidth = strwidth(g:FoldText_expansion[1 : -2])
-        var remainder = (expansionWidth - 2) % extensionCenterWidth
-        expansionStr = g:FoldText_expansion[0] .. repeat(g:FoldText_expansion[1 : -2], (expansionWidth - 2) / extensionCenterWidth) .. repeat(g:FoldText_expansion[-2 : -2], remainder) .. g:FoldText_expansion[-1 :]
-    endif
-    return beginning .. line[beginning->strcharlen() : ] .. foldEnding .. expansionStr
+    var contentLine = beginning .. line[beginning->strcharlen() : ] .. foldEnding
+    var expansionStr = GetExpansionStr(strwidth(contentLine))
+
+    return contentLine .. expansionStr
 enddef
 
 set foldtext=s:FoldText()
