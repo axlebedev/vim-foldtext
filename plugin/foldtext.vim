@@ -16,6 +16,7 @@ var END_BLOCK_REGEX = printf('^\(\s*\|\s*\"\s*\)\(%s\);\?$', join(END_BLOCK_CHAR
 var END_COMMENT_REGEX = '\s*\*/\s*$'
 var START_COMMENT_BLANK_REGEX = '\v^\s*/\*!?\s*$'
 
+# Get linenumber of first non-blank line in fold
 def GetFoldStartLineNr(): number
     var foldStartLine = v:foldstart
     while getline(foldStartLine) =~ '^\s*$'
@@ -24,6 +25,7 @@ def GetFoldStartLineNr(): number
     return foldStartLine
 enddef
 
+# Return inner width of current window, without numberColumn, sign, ets.
 def GetWidth(): number
     var signs = ''
     redir > signs | exe "silent sign place buffer=" .. bufnr('') | redir end
@@ -36,6 +38,8 @@ def GetWidth(): number
     return width
 enddef
 
+# Return string of spaces to the end of window
+# (override default '---' string)
 def GetExpansionStr(contentLineWidth: number): string
     var expansionWidth = GetWidth() - contentLineWidth
     var expansionStr = repeat(' ', expansionWidth)
@@ -47,6 +51,17 @@ def GetExpansionStr(contentLineWidth: number): string
     return expansionStr
 enddef
 
+# If enabled 'g:FoldText_info' - return number of folded lines
+def GetBeginning(): string
+    var beginning = ''
+    if (g:FoldText_info)
+        var foldSize = 1 + v:foldend - v:foldstart
+        beginning = printf("%s", foldSize)
+    endif
+    return beginning
+enddef
+
+# MAIN
 def FoldText(): string
     if (v:foldend == 0)
         return ''
@@ -77,13 +92,7 @@ def FoldText(): string
     endif
     foldEnding = substitute(foldEnding, '\s\+$', '', '')
 
-    var width = GetWidth()
-
-    var beginning = ''
-    if (g:FoldText_info)
-        var foldSize = 1 + v:foldend - v:foldstart
-        beginning = printf("%s", foldSize)
-    endif
+    var beginning = GetBeginning()
 
     var contentLine = beginning .. line[beginning->strcharlen() : ] .. foldEnding
     var expansionStr = GetExpansionStr(strwidth(contentLine))
