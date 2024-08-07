@@ -76,12 +76,7 @@ def GetEnding(): string
     return foldEnding
 enddef
 
-# MAIN
-def FoldText(): string
-    if (v:foldend == 0)
-        return ''
-    endif
-
+def GetBeginning(): string
     var foldStartLineNr = GetFoldStartLineNr()
     var line = getline(v:foldstart)
     if (foldStartLineNr <= v:foldend)
@@ -95,10 +90,21 @@ def FoldText(): string
         var nextLine = substitute(getline(v:foldstart + 1), '\v\s*\*', '', '')
         line = line .. nextLine
     endif
+    return line
+enddef
+
+# MAIN
+def FoldText(): string
+    if (v:foldend == 0)
+        return ''
+    endif
+
+    var foldBeginning = GetBeginning()
+    var foldEnding = GetEnding()
 
     var count = GetLinesCount()
 
-    var contentLine = count .. strcharpart(line, count->strcharlen()) .. GetMiddle() .. foldEnding
+    var contentLine = count .. strcharpart(foldBeginning, count->strcharlen()) .. GetMiddle() .. foldEnding
     var expansionStr = GetExpansionStr(strwidth(contentLine))
 
     return contentLine .. expansionStr
