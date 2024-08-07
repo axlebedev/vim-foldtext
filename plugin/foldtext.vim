@@ -1,8 +1,8 @@
 vim9script 
 
 var defaults = has('multi_byte')
-    ? { placeholder: '⋯', line: '▤', multiplication: '×' }
-    : { placeholder: '...', line: 'L', multiplication: '*' }
+    ? { placeholder: '⋯' }
+    : { placeholder: '...' }
 
 g:FoldText_placeholder    = get(g:, 'FoldText_placeholder', defaults['placeholder'])
 g:FoldText_showCount      = get(g:, 'FoldText_showCount',   true)
