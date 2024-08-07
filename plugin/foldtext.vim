@@ -1,11 +1,12 @@
 vim9script 
 
 var defaults = has('multi_byte')
-    ? { placeholder: '⋯' }
-    : { placeholder: '...' }
+    ? { placeholder: '⋯', countFormat: '｢%s｣'  }
+    : { placeholder: '...', countFormat: '[%s]' }
 
 g:FoldText_placeholder    = get(g:, 'FoldText_placeholder', defaults['placeholder'])
 g:FoldText_showCount      = get(g:, 'FoldText_showCount',   true)
+g:FoldText_countFormat = get(g:, 'FoldText_countFormat', defaults['countFormat'])
 
 var END_BLOCK_CHARS   = ['end', '}', ']', ')', '})', '},', '}}}']
 var END_BLOCK_REGEX = printf('^\(\s*\|\s*\"\s*\)\(%s\);\?$', join(END_BLOCK_CHARS, '\|'))
@@ -45,7 +46,7 @@ def GetLinesCount(): string
     var count = ''
     if (g:FoldText_showCount)
         var foldSize = 1 + v:foldend - v:foldstart
-        count = printf("%s", foldSize)
+        count = printf(g:FoldText_countFormat, foldSize)
     endif
     return count
 enddef
