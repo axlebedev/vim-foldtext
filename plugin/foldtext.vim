@@ -99,12 +99,11 @@ def FoldText(): string
         return ''
     endif
 
-    var foldBeginning = GetBeginning()
-    var foldEnding = GetEnding()
+    var foldLine = GetBeginning() .. GetMiddle() .. GetEnding()
 
     var count = GetLinesCount()
+    var contentLine = count .. strcharpart(foldLine, count->strcharlen())
 
-    var contentLine = count .. strcharpart(foldBeginning, count->strcharlen()) .. GetMiddle() .. foldEnding
     var expansionStr = GetExpansionStr(strwidth(contentLine))
 
     return contentLine .. expansionStr
