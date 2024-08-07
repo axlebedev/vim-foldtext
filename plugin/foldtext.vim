@@ -21,7 +21,7 @@ def GetFoldStartLineNr(): number
     return foldStartLine
 enddef
 
-# Return inner width of current window, without numberColumn, sign, ets.
+# Return inner width of current window, without numberColumn, sign, etc.
 def GetWidth(): number
     var signs = ''
     redir > signs | exe "silent sign place buffer=" .. bufnr('') | redir end
