@@ -61,38 +61,44 @@ def GetLinesCount(): string
     return count
 enddef
 
+def GetMiddle(): string
+    return ' ' .. g:FoldText_placeholder .. ' '
+enddef
+
+def GetEnding(): string
+    var foldEnding = strpart(getline(v:foldend), indent(v:foldend), 3)
+
+    if (foldEnding =~ END_BLOCK_REGEX && foldEnding =~ '^\s*\"')
+        foldEnding = strpart(getline(v:foldend), indent(v:foldend) + 2, 3)
+    endif
+
+    foldEnding = substitute(foldEnding, '\s\+$', '', '')
+    return foldEnding
+enddef
+
 # MAIN
 def FoldText(): string
     if (v:foldend == 0)
         return ''
     endif
 
-    var foldStartLine = GetFoldStartLineNr()
+    var foldStartLineNr = GetFoldStartLineNr()
     var line = getline(v:foldstart)
-    if (foldStartLine <= v:foldend)
+    if (foldStartLineNr <= v:foldend)
         var spaces = repeat(' ', &tabstop)
-        line = substitute(getline(foldStartLine), '\t', spaces, 'g')
+        line = substitute(getline(foldStartLineNr), '\t', spaces, 'g')
     endif
 
-    var foldEnding = strpart(getline(v:foldend), indent(v:foldend), 3)
+    var foldEnding = GetEnding()
 
-    if (foldEnding =~ END_BLOCK_REGEX)
-        if (foldEnding =~ '^\s*\"')
-            foldEnding = strpart(getline(v:foldend), indent(v:foldend) + 2, 3)
-        endif
-    elseif (foldEnding =~ END_COMMENT_REGEX)
-        if (getline(v:foldstart) =~ START_COMMENT_BLANK_REGEX)
-            var nextLine = substitute(getline(v:foldstart + 1), '\v\s*\*', '', '')
-            line = line .. nextLine
-        endif
+    if (foldEnding =~ END_COMMENT_REGEX && getline(v:foldstart) =~ START_COMMENT_BLANK_REGEX)
+        var nextLine = substitute(getline(v:foldstart + 1), '\v\s*\*', '', '')
+        line = line .. nextLine
     endif
-
-    foldEnding = ' ' .. g:FoldText_placeholder .. ' ' .. foldEnding
-    foldEnding = substitute(foldEnding, '\s\+$', '', '')
 
     var count = GetLinesCount()
 
-    var contentLine = count .. line[count->strcharlen() : ] .. foldEnding
+    var contentLine = count .. strcharpart(line, count->strcharlen()) .. GetMiddle() .. foldEnding
     var expansionStr = GetExpansionStr(strwidth(contentLine))
 
     return contentLine .. expansionStr
