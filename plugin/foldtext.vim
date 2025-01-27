@@ -10,8 +10,8 @@ g:FoldText_countFormat = get(g:, 'FoldText_countFormat', defaults['countFormat']
 
 var END_BLOCK_CHARS   = ['end', '}', ']', ')', '})', '},', '}}}']
 var END_BLOCK_REGEX = printf('^\(\s*\|\s*\"\s*\)\(%s\);\?$', join(END_BLOCK_CHARS, '\|'))
-var END_COMMENT_REGEX = '\s*\*/\s*$'
-var START_COMMENT_BLANK_REGEX = '\v^\s*/\*!?\s*$'
+var END_COMMENT_REGEX = '\v\s*\*\/\s*$'
+var START_COMMENT_BLANK_REGEX = '\v^\s*\/\*\*?$'
 
 # Get linenumber of first non-blank line in fold
 def GetFoldStartLineNr(): number
